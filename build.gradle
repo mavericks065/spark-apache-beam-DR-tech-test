@@ -1,0 +1,103 @@
+group 'au.com.nig.dr'
+version '1.0-SNAPSHOT'
+
+buildscript {
+    ext.kotlin_version = '1.2.10'
+
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+
+    }
+}
+
+apply plugin: 'kotlin'
+apply plugin: 'application'
+
+//
+//def dependOnProjects = [":beam-runners-core-construction-java",
+//                        ":beam-runners-core-java",
+//                        ":beam-runners-local-java-core",
+//                        ":beam-runners-java-fn-execution",
+//                        ":beam-sdks-java-fn-execution"]
+//
+//apply plugin: org.apache.beam.gradle.BeamModulePlugin
+//
+//applyJavaNature(shadowClosure: DEFAULT_SHADOW_CLOSURE << {
+//    dependencies {
+//        dependOnProjects.each {
+//            include(project(path: it, configuration: "shadow"))
+//        }
+//    }
+//    relocate "org.apache.beam.runners.core", getJavaRelocatedPath("runners.core")
+//    relocate "org.apache.beam.runners.fnexecution", getJavaRelocatedPath("runners.fnexecution")
+//    relocate "org.apache.beam.sdk.fn", getJavaRelocatedPath("sdk.fn")
+//    relocate "org.apache.beam.runners.local", getJavaRelocatedPath("runners.local")
+//})
+//
+//description = "Apache Beam :: Runners :: Direct Java"
+//
+//evaluationDependsOn(":beam-runners-core-construction-java")
+//evaluationDependsOn(":beam-runners-core-java")
+//evaluationDependsOn(":beam-sdks-java-core")
+//
+//configurations {
+//    needsRunner
+//    validatesRunner
+//    validatesPortableRunner
+//}
+
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    compile "org.apache.beam:beam-sdks-java-core:2.5.0"
+    compile "org.apache.beam:beam-sdks-java-io-google-cloud-platform:2.5.0"
+    compile "org.apache.beam:beam-sdks-java-io-tika:2.5.0"
+    testCompile "org.apache.beam:beam-runners-direct-java:2.5.0"
+    runtime "org.apache.beam:beam-runners-google-cloud-dataflow-java:2.5.0"
+    compile 'com.google.cloud.dataflow:google-cloud-dataflow-java-sdk-all:2.5.0'
+    runtime "org.apache.tika:tika-parsers:1.18"
+    compile "org.slf4j:slf4j-api:1.7.25"
+    runtime "org.slf4j:slf4j-jdk14:1.7.25"
+    compile "junit:junit:4.12"
+    testCompile "org.mockito:mockito-core:1.9.5"
+    compile "com.google.guava:guava:26.0-jre"
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+task resources {
+    def resourcesDir = new File('build/resources/main')
+    resourcesDir.mkdirs()
+}
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'Apache Beam technical test Data Rep',
+                'Implementation-Version': version,
+                'Main-Class': 'au.com.nig.dr.Main'
+    }
+    baseName = 'spark-apache-beam-DataRep-tech-test-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+run {
+    if (project.hasProperty('args')) {
+        args project.args.split('\\s')
+    }
+}
+
+run.mustRunAfter 'resources'
